@@ -23,22 +23,46 @@ namespace AzureOpenAIConsole
 
         static async Task Main(string[] args)
         {
-            // Load environment variables
-            Env.Load();
+            try
+            {
+                Console.WriteLine("=== Azure OpenAI + Search RAG Demo ===\n");
 
-            // Load application configuration
-            await LoadApplicationConfiguration();
+                // Load environment variables
+                Env.Load();
 
-            LoadConfiguration();
-            SetupSearchClient();
+                // Validate environment variables
+                var envValidation = ConfigurationValidator.ValidateEnvironmentVariables();
+                if (!envValidation.IsValid)
+                {
+                    Console.WriteLine("[Error] Environment validation failed:");
+                    envValidation.PrintResults();
+                    Environment.Exit(1);
+                }
 
-            Console.WriteLine("=== Azure OpenAI + Search RAG Demo ===\n");
+                // Load application configuration
+                await LoadApplicationConfiguration();
 
-            // Setup demo data
-            await SetupKnowledgeBase();
+                LoadConfiguration();
+                SetupSearchClient();
 
-            // Interactive chat with RAG
-            await InteractiveChatWithRAG();
+                // Setup demo data
+                await SetupKnowledgeBase();
+
+                // Interactive chat with RAG
+                await InteractiveChatWithRAG();
+
+                // Print performance statistics
+                PerformanceLogger.PrintPerformanceStats();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Fatal Error] Application failed to start: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                Environment.Exit(1);
+            }
         }
 
         static void LoadConfiguration()
@@ -230,6 +254,8 @@ namespace AzureOpenAIConsole
 
         static async Task<float[]> GetEmbedding(string text)
         {
+            using var timer = PerformanceLogger.StartOperation("Generate Embedding");
+
             string url =
                 $"{endpoint.TrimEnd('/')}/openai/deployments/{embeddingDeployment}/embeddings?api-version=2023-05-15";
 
@@ -331,6 +357,8 @@ namespace AzureOpenAIConsole
 
         static async Task<string> GenerateResponseWithContext(string question, string context)
         {
+            using var timer = PerformanceLogger.StartOperation("Generate Chat Response");
+
             string url =
                 $"{endpoint.TrimEnd('/')}/openai/deployments/{chatDeployment}/chat/completions?api-version=2024-02-01";
 
@@ -370,17 +398,32 @@ Context:
 
         static async Task LoadApplicationConfiguration()
         {
+            using var timer = PerformanceLogger.StartOperation("Load Configuration");
+
             string configPath = "appsettings.json";
             if (File.Exists(configPath))
             {
                 string configJson = await File.ReadAllTextAsync(configPath);
                 appConfig = JsonSerializer.Deserialize<AppConfiguration>(configJson) ?? new AppConfiguration();
-                Console.WriteLine($"Loaded configuration: Data source = {appConfig.DataSource.Type}");
+
+                // Validate configuration
+                var validation = ConfigurationValidator.ValidateConfiguration(appConfig);
+                validation.PrintResults();
+
+                if (!validation.IsValid)
+                {
+                    Console.WriteLine("[Error] Configuration validation failed. Using default configuration.");
+                    appConfig = new AppConfiguration();
+                }
+                else
+                {
+                    Console.WriteLine($"Loaded configuration: Data source = {appConfig.DataSource.Type}");
+                }
             }
             else
             {
                 appConfig = new AppConfiguration();
-                Console.WriteLine("Using default configuration");
+                Console.WriteLine("appsettings.json not found. Using default configuration");
             }
         }
     }
