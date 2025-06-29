@@ -81,22 +81,49 @@ Uses predefined documents in the code.
 
 ## 🛠️ Setup
 
-1. Set up your environment variables:
+### 🔐 Security Setup
 
-   ```
-   AOAI_ENDPOINT=your_azure_openai_endpoint
-   AOAI_APIKEY=your_azure_openai_api_key
-   CHATCOMPLETION_DEPLOYMENTNAME=your_chat_deployment_name
-   EMBEDDING_DEPLOYMENTNAME=your_embedding_deployment_name
-   COGNITIVESEARCH_ENDPOINT=your_search_endpoint
-   COGNITIVESEARCH_APIKEY=your_search_api_key
+1. **Copy the environment template:**
+
+   ```bash
+   cp .env.template .env
    ```
 
-2. Configure your data source in `appsettings.json`
+2. **Configure your Azure credentials in `.env`:**
+   ```
+   AOAI_ENDPOINT=https://your-openai-resource.openai.azure.com
+   AOAI_APIKEY=your-azure-openai-api-key
+   CHATCOMPLETION_DEPLOYMENTNAME=your-chat-deployment-name
+   EMBEDDING_DEPLOYMENTNAME=your-embedding-deployment-name
+   COGNITIVESEARCH_ENDPOINT=https://your-search-service.search.windows.net
+   COGNITIVESEARCH_APIKEY=your-search-api-key
+   ```
 
-3. Add your documents to the appropriate location based on your configuration
+### ⚠️ Important Security Notes
 
-4. Run the application: `dotnet run`
+- **Never commit `.env` to version control** - it's already in `.gitignore`
+- Always keep your API keys private
+- Regenerate keys if accidentally exposed
+- Use Azure Key Vault for production deployments
+
+### 📋 Quick Start Steps
+
+```
+AOAI_ENDPOINT=your_azure_openai_endpoint
+AOAI_APIKEY=your_azure_openai_api_key
+CHATCOMPLETION_DEPLOYMENTNAME=your_chat_deployment_name
+EMBEDDING_DEPLOYMENTNAME=your_embedding_deployment_name
+COGNITIVESEARCH_ENDPOINT=your_search_endpoint
+COGNITIVESEARCH_APIKEY=your_search_api_key
+### 📋 Quick Start Steps
+
+1. **Copy environment template:** `cp .env.template .env`
+
+2. **Configure your data source in `appsettings.json`**
+
+3. **Add your documents** to the appropriate location based on your configuration
+
+4. **Run the application:** `dotnet run`
 
 ## 🔄 How It Works
 
@@ -132,22 +159,24 @@ Uses predefined documents in the code.
 Example performance output:
 
 ```
+
 === Performance Statistics ===
 Load Configuration:
-  Count: 1
-  Total: 45ms
-  Average: 45.0ms
-  Min: 45ms
-  Max: 45ms
+Count: 1
+Total: 45ms
+Average: 45.0ms
+Min: 45ms
+Max: 45ms
 
 Generate Embedding:
-  Count: 6
-  Total: 1250ms
-  Average: 208.3ms
-  Min: 180ms
-  Max: 245ms
+Count: 6
+Total: 1250ms
+Average: 208.3ms
+Min: 180ms
+Max: 245ms
 ================================
-```
+
+````
 
 ## 🛡️ Error Handling & Validation
 
@@ -209,7 +238,7 @@ cp appsettings.textfiles.json appsettings.json
 
 # Use CSV files
 cp appsettings.csv.json appsettings.json
-```
+````
 
 ### Cache Management
 
